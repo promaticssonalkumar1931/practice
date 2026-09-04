@@ -14,7 +14,9 @@ app.use(cookieParser());
 app.get('/', (req, res) => {
   res.json({ message: 'Auth API is running' });
 });
-
+app.get('/',(req,res)=>{
+  req.setEncoding("Ledger Services is up and running")
+})
 app.use('/api/auth', authRoutes);
 app.use('/api/accounts',accountRoutes);
 app.use('/api/transection',transectionRoutes)
