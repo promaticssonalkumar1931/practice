@@ -9,10 +9,13 @@ const app = express();
 const cors = require('cors');
 
 const corsOptions = {
-  origin: 'http://localhost:4200',
-  credentials: true
+  origin: true,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-Idempotency-Key']
 };
 app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 app.use(express.json());
 app.use(morgan('dev'));
 app.use(cookieParser());
@@ -21,9 +24,6 @@ app.use(cookieParser());
 app.get('/', (req, res) => {
   res.json({ message: 'Auth API is running' });
 });
-app.get('/',(req,res)=>{
-  req.setEncoding("Ledger Services is up and running")
-})
 app.use('/api/auth', authRoutes);
 app.use('/api/accounts',accountRoutes);
 app.use('/api/transection',transectionRoutes)

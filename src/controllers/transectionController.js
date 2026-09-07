@@ -101,37 +101,41 @@ async function createtransection(req,res){
         status:"PENDING"
     }],{session}))[0]
 
-    const debitLedger=await ledgerModel.create([{
-        account:fromaccount,
-        amount:amount,
-        type:"DEBIT",
-        transection:transection._id
-    }],{session})
+    const debitLedger = await ledgerModel.create([
+        {
+            account: fromaccount,
+            amount: amount,
+            type: "DEBIT",
+            transection: transection._id
+        }
+    ], { session });
 
-    await(()=>{
-        return new Promise((resolve)=>setTimeout(resolve,15*1000))
-    })
+    const creditLedger = await ledgerModel.create([
+        {
+            account: toaccount,
+            amount: amount,
+            type: "CREDIT",
+            transection: transection._id
+        }
+    ], { session });
 
-    const creditLedger=await ledgerModel.create([{
-        account:toaccount,
-        amount:amount,
-        type:"CREDIT",
-        transection:transection._id
-    }],{session})
+    await transectionModel.findOneAndUpdate({ _id: transection._id }, { status: "COMPLETED" }, { session });
 
+    try {
+        await session.commitTransaction();
+    } catch (commitErr) {
+        await session.abortTransaction();
+        session.endSession();
+        return res.status(500).json({ message: "Transection commit failed, please retry", error: commitErr.message });
+    }
 
-   // transection.status="COMPLETED"
-
-//await transection.save({session});
-   await transectionModel.findOneAndUpdate({_id:transection._id},{status:"COMPLETED"},{session})
-
-    await session.commitTransaction();
-
-    session.endSession()
-}catch(err){
-    return res.status(400).json({
-        message:"Transection is Pending ue to some issue plse retry some time"
-    })
+    session.endSession();
+} catch (err) {
+    try {
+        await session.abortTransaction();
+    } catch (e) {}
+    if (session && session.endSession) session.endSession();
+    return res.status(500).json({ message: "Transection failed, please retry later", error: err.message });
 }
 
     res.status(200).json({
