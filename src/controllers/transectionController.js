@@ -15,14 +15,15 @@ async function createtransection(req,res){
             message:"fromaccount,toaccount,amount,idempotency all required to create the transeection",
         })
     }
-    const fromuseraccount=await accountModel.findOne({_id:fromaccount});
+    const fromuseraccount=await accountModel.findOne({_id:fromaccount, user:req.user._id});
     const touseraccount=await accountModel.findOne({_id:toaccount});
 
 
-    if(!fromuseraccount || !touseraccount){
-        return res.status(400).json({
-            message:"fromaccount and toaccount is not present"
-        })
+    if(!fromuseraccount){
+        return res.status(400).json({ message:"Sender account was not found or does not belong to you." })
+    }
+    if(!touseraccount){
+        return res.status(400).json({ message:"Recipient account ID was not found." })
     }
 
 
