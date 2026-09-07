@@ -6,10 +6,18 @@ const authRoutes = require('./routes/authRoutes');
 const accountRoutes=require('./routes/accountRoutes')
 const transectionRoutes=require('./routes/transectionRoutes')
 const app = express();
-
+const cors = require('cors');
 app.use(express.json());
 app.use(morgan('dev'));
 app.use(cookieParser());
+app.use(cors({
+  origin: [
+    'http://localhost:4201',
+    'http://127.0.0.1:4201',
+    'https://your-frontend-domain.com'
+  ],
+  credentials: true
+}));
 
 app.get('/', (req, res) => {
   res.json({ message: 'Auth API is running' });
